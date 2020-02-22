@@ -26,6 +26,13 @@ public class ImagesService {
         repo.saveAndFlush(image);
     }
 
+    @Transactional
+    public void ratingDown(int id) {
+        Image image = repo.findById(id).orElse(null);
+        image.setRatingDown(image.getRatingDown() +1);
+        repo.saveAndFlush(image);
+    }
+
     public Image getImage(int id) {
         return repo.findById(id).orElse(null);
     }
