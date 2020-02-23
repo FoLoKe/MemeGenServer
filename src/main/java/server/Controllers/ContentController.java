@@ -59,19 +59,23 @@ public class ContentController {
     @PostMapping("/newUser")
     public ResponseEntity<String> register(@RequestBody User user)
     {
-        return null;
+        usersService.regNewUser(user);
+        return new ResponseEntity<String>(usersService.getUser(user.getId())+"", HttpStatus.ACCEPTED);
     }
 //добавление мема в БД если имеются не существующие в бд теги создать экземпляры в Tag и сохранить
     @PostMapping("/addMeme")
     public ResponseEntity<String> addMeme(@RequestBody Image meme)
     {
-        return null;
+        imagesService.regNewImage(meme);
+        return new ResponseEntity<String>(imagesService.getImage(meme.getId())+"", HttpStatus.ACCEPTED);
+
     }
 //
     @PostMapping("/addTemplate")
     public ResponseEntity<String> register(@RequestBody Template template)
     {
-        return null;
+        templatesService.regNewTemplate(template);
+        return new ResponseEntity<String>(templatesService.getTemplate(template.getId())+"", HttpStatus.ACCEPTED);
     }
 
 }
