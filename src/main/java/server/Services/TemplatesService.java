@@ -5,9 +5,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import server.Entities.Tag;
 import server.Entities.Template;
 
+import server.Entities.User;
 import server.Repositories.TemplatesRepository;
 
 import java.util.List;
@@ -21,9 +21,13 @@ public class TemplatesService {
         return  repo.findTemplates(PageRequest.of(start, max, Sort.Direction.ASC,"id"));
     }
 
+    public List<Template> getAllTemplates(){
+        return  repo.findAll();
+    }
+
     public void regNewTemplate(Template template)
     {
-        List<Template> templates= getSomeTemplates(0,100);
+        List<Template> templates= getAllTemplates();
 
 
         if(template.getName()!=null&&!templates.contains(template))

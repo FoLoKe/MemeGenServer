@@ -43,7 +43,7 @@ public class ContentController {
 
 
 //повышение рейтинга мема по id переданому в image, сохранение и отправка нового рейтинга обратно.
-    @PostMapping("/ratingup")
+    @PostMapping("/ratingUp")
     public ResponseEntity<String> ratingUp(@RequestBody Image image) {
         imagesService.ratingUp(image.getId());
         return new ResponseEntity<String>(imagesService.getImage(image.id).getRatingUp() + "", HttpStatus.ACCEPTED);

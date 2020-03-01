@@ -20,11 +20,13 @@ public class UsersService {
         return  repo.findUsers(PageRequest.of(start, max, Sort.Direction.ASC,"id"));
     }
 
-
+    public List<User> getAllUsers(){
+        return  repo.findAll();
+    }
 
     public void regNewUser(User user)
     {
-        List<User> users= getSomeUsers(0,100);
+        List<User> users= getAllUsers();
 
 if(user.getName()!=null||user.getPassword()!=null||users.contains(user.getName())==false)
 {

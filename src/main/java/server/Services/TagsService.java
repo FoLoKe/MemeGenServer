@@ -21,9 +21,13 @@ public class TagsService {
         return  repo.findTags(PageRequest.of(start, max, Sort.Direction.ASC,"id"));
     }
 
+    public List<Tag> getAllTags(){
+        return  repo.findAll();
+    }
+
     public void regNewTag(Tag tag)
     {
-        List<Tag> tags= getSomeTags(0,100);
+        List<Tag> tags= getAllTags();
 
 
         if(tag.getName()!=null&&!tags.contains(tag))

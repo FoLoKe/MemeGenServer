@@ -8,7 +8,7 @@ import server.Entities.Image;
 import server.Entities.Tag;
 import server.Entities.User;
 import server.Repositories.ImagesRepository;
-
+import server.Services.TagsService;
 import javax.transaction.Transactional;
 import java.util.List;
 
@@ -19,6 +19,10 @@ public class ImagesService {
     public TagsService tagser;
     public List<Image> getSomeImages(int start, int max){
         return  repo.findImages(PageRequest.of(start, max, Sort.Direction.ASC, "id"));
+    }
+
+    public List<Image> getAllImages(){
+        return  repo.findAll();
     }
 
     @Transactional
@@ -38,10 +42,18 @@ public class ImagesService {
 
     public void regNewImage(Image image)
     {
-        List<Tag> tags= tagser.getSomeTags(0,100);
+        List<Tag> allTagsOnServer= tagser.getAllTags();
+        List<Tag> allTagsOfImage= tagser.getAllTags();
 
-        if(!tags.contains(image.getTags()))
+        for(Tag buffTagOnSer : allTagsOnServer)
         {
+            for(Tag buffTagOnIm : allTagsOfImage)
+            {
+                if(!buffTagOnSer.getName().contains(buffTagOnIm.getName()))
+                {
+                    tagser.regNewTag(buffTagOnIm);
+                }
+            }
 
         }
 

@@ -10,4 +10,6 @@ import java.util.List;
 public interface ImagesRepository extends JpaRepository<Image, Integer> {
     @Query("select i from Image i")
     List<Image> findImages(Pageable pageable);
+
+
 }

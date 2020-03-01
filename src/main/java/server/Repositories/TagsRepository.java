@@ -10,4 +10,5 @@ import java.util.List;
 public interface TagsRepository extends JpaRepository<Tag, Integer> {
     @Query("select i from Tag i")
     List<Tag> findTags(Pageable pageable);
+
 }
