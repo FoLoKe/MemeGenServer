@@ -4,8 +4,8 @@ import javax.persistence.*;
 import java.util.Set;
 
 @Entity
-@Table(name = "memegen.Images")
-public class Image {
+@Table(name = "memegen.Memes")
+public class Meme {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,21 +15,27 @@ public class Image {
     @Column(name = "image", length = 1024 * 1024 * 32)
     private byte[] image;
 
-    @Column(name = "ratingUp")
-    private int ratingUp;
-
-    @Column(name = "ratingDown")
-    private int ratingDown;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
     @Column(name = "tags")
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "tags_images")
+    @JoinTable(name = "memegen.tags_images")
     @OrderBy(value = "tag_id")
     private Set<Tag> tags;
+
+    @Column(name = "likes")
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "memegen.users_likes")
+    @OrderBy(value = "user_id")
+    private Set<User> likes;
+
+    @Column(name = "dislikes")
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "memegen.users_dislikes")
+    @OrderBy(value = "user_id")
+    private Set<User> dislikes;
 
     public Set<Tag> getTags() {
         return tags;
@@ -55,20 +61,20 @@ public class Image {
         this.image = image;
     }
 
-    public int getRatingUp() {
-        return ratingUp;
+    public Set<User> getLikes() {
+        return likes;
     }
 
-    public void setRatingUp(int ratingUp) {
-        this.ratingUp = ratingUp;
+    public void setLikes(Set<User> likes) {
+        this.likes = likes;
     }
 
-    public int getRatingDown() {
-        return ratingDown;
+    public Set<User> getDislikes() {
+        return dislikes;
     }
 
-    public void setRatingDown(int ratingDown) {
-        this.ratingDown = ratingDown;
+    public void setDislikes(Set<User> dislikes) {
+        this.dislikes = dislikes;
     }
 
     public User getUser() {

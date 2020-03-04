@@ -1,17 +1,19 @@
 package server.Controllers;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import server.Entities.Image;
+import server.Entities.Meme;
+import server.Entities.MemeInfo;
 import server.Entities.Template;
 import server.Entities.User;
-import server.Services.ImagesService;
+import server.Services.MemeService;
 import server.Services.TagsService;
 import server.Services.TemplatesService;
 import server.Services.UsersService;
@@ -20,19 +22,52 @@ import server.Services.UsersService;
 public class ContentController {
 
     @Autowired
-    ImagesService imagesService;
+    MemeService memeService;
+
+    @Autowired
     TemplatesService templatesService;
+
+    @Autowired
     TagsService tagsService;
+
+    @Autowired
     UsersService usersService;
 
-    private static final String template = "Hello, %s!";
-    private final AtomicLong counter = new AtomicLong();
-
     @GetMapping("/get")
-    public List<Image> getSome() {
-        List<Image> loaded = imagesService.getSomeImages(0,2);
-        return loaded;
+    public List<MemeInfo> getSome() {
+        List<Meme> memes = memeService.getSomeImages(0, 10);
+        List<MemeInfo> memesInfo = new ArrayList<>();
+        for(Meme meme : memes) {
+            MemeInfo memeInfo = new MemeInfo();
+            memeInfo.setLikes(meme.getLikes().size());
+            memeInfo.setDislikes(meme.getDislikes().size());
 
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if(auth.isAuthenticated()) {
+                User user = usersService.findByName(auth.getName());
+                if(user != null) {
+                    for (User poster : meme.getLikes()) {
+                        if (poster.getName().equals(user.getName())) {
+                            memeInfo.setLikeState(true);
+                            break;
+                        }
+                    }
+
+                    for (User poster : meme.getDislikes()) {
+                        if (poster.getName().equals(user.getName())) {
+                            memeInfo.setDislikeState(true);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            meme.setDislikes(null);
+            meme.setLikes(null);
+            memeInfo.setMeme(meme);
+            memesInfo.add(memeInfo);
+        }
+        return memesInfo;
     }
 
     @GetMapping("/getTemplates")
@@ -41,20 +76,17 @@ public class ContentController {
         return loaded;
     }
 
+    @PostMapping("/rating")
+    public ResponseEntity<MemeInfo> postRating(@RequestParam(name = "id") int id, @RequestParam(name = "type") String typeString) {
+        boolean type = Boolean.parseBoolean(typeString);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = usersService.findByName(auth.getName());
 
-//повышение рейтинга мема по id переданому в image, сохранение и отправка нового рейтинга обратно.
-    @PostMapping("/ratingUp")
-    public ResponseEntity<String> ratingUp(@RequestBody Image image) {
-        imagesService.ratingUp(image.getId());
-        return new ResponseEntity<String>(imagesService.getImage(image.id).getRatingUp() + "", HttpStatus.ACCEPTED);
-    }
-//повышение отрицательного рейтинга мема по id переданому в image, сохранение и отправка нового рейтинга обратно.
-    @PostMapping("/ratingDown")
-    public ResponseEntity<String> ratingDown(@RequestBody Image image) {
-        imagesService.ratingDown(image.getId());
-        return new ResponseEntity<String>(imagesService.getImage(image.id).getRatingDown() + "", HttpStatus.ACCEPTED);
+        MemeInfo memeInfo = memeService.postRating(id, type, user);
 
+        return new ResponseEntity<>(memeInfo, HttpStatus.ACCEPTED);
     }
+
 //регистрация нового пользователя в БД.
     @PostMapping("/newUser")
     public ResponseEntity<String> register(@RequestBody User user)
@@ -64,13 +96,13 @@ public class ContentController {
     }
 //добавление мема в БД если имеются не существующие в бд теги создать экземпляры в Tag и сохранить
     @PostMapping("/addMeme")
-    public ResponseEntity<String> addMeme(@RequestBody Image meme)
+    public ResponseEntity<String> addMeme(@RequestBody Meme meme)
     {
-        imagesService.regNewImage(meme);
-        return new ResponseEntity<String>(imagesService.getImage(meme.getId())+"", HttpStatus.ACCEPTED);
+        memeService.regNewImage(meme);
+        return new ResponseEntity<String>(memeService.getImage(meme.getId())+"", HttpStatus.ACCEPTED);
 
     }
-//
+
     @PostMapping("/addTemplate")
     public ResponseEntity<String> register(@RequestBody Template template)
     {

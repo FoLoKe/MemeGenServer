@@ -10,6 +10,9 @@ public class User {
     @Column(name = "user_id")
     private int id;
 
+    @Column(name = "role")
+    private String role;
+
     @Column(name = "nickname")
     private String name;
 
@@ -18,6 +21,14 @@ public class User {
 
     @Column(name = "banned")
     private boolean banned;
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
 
     public int getId() {
         return id;
@@ -49,5 +60,22 @@ public class User {
 
     public void setBanned(boolean banned) {
         this.banned = banned;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+
+        if (!User.class.isAssignableFrom(obj.getClass())) {
+            return false;
+        }
+
+        if(obj.hashCode() != hashCode()) {
+            return false;
+        }
+
+        return ((User) obj).getName().equals(name);
     }
 }

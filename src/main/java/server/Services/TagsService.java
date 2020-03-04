@@ -4,10 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import server.Entities.Image;
 import server.Entities.Tag;
 
-import server.Entities.User;
 import server.Repositories.TagsRepository;
 
 import java.util.List;

@@ -13,4 +13,5 @@ public interface UsersRepository extends JpaRepository<User, Integer> {
     List<User> findUsers(Pageable pageable);
 
 
+    User findByName(String s);
 }
