@@ -62,20 +62,5 @@ public class User {
         this.banned = banned;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
 
-        if (!User.class.isAssignableFrom(obj.getClass())) {
-            return false;
-        }
-
-        if(obj.hashCode() != hashCode()) {
-            return false;
-        }
-
-        return ((User) obj).getName().equals(name);
-    }
 }

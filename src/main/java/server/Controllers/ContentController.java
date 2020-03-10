@@ -78,13 +78,18 @@ public class ContentController {
 
     @PostMapping("/rating")
     public ResponseEntity<MemeInfo> postRating(@RequestParam(name = "id") int id, @RequestParam(name = "type") String typeString) {
-        boolean type = Boolean.parseBoolean(typeString);
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User user = usersService.findByName(auth.getName());
+        if(auth.isAuthenticated()) {
+            User user = usersService.findByName(auth.getName());
+            if (user != null) {
+                boolean type = Boolean.parseBoolean(typeString);
 
-        MemeInfo memeInfo = memeService.postRating(id, type, user);
+                MemeInfo memeInfo = memeService.postRating(id, type, user);
 
-        return new ResponseEntity<>(memeInfo, HttpStatus.ACCEPTED);
+                return new ResponseEntity<>(memeInfo, HttpStatus.ACCEPTED);
+            }
+        }
+        return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
     }
 
 //регистрация нового пользователя в БД.
@@ -95,19 +100,34 @@ public class ContentController {
         return new ResponseEntity<String>(usersService.getUser(user.getId())+"", HttpStatus.ACCEPTED);
     }
 //добавление мема в БД если имеются не существующие в бд теги создать экземпляры в Tag и сохранить
-    @PostMapping("/addMeme")
+    @PostMapping("/postMeme")
     public ResponseEntity<String> addMeme(@RequestBody Meme meme)
     {
-        memeService.regNewImage(meme);
-        return new ResponseEntity<String>(memeService.getImage(meme.getId())+"", HttpStatus.ACCEPTED);
-
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if(auth.isAuthenticated()) {
+            User user = usersService.findByName(auth.getName());
+            if (user != null) {
+                meme.setUser(user);
+                memeService.regNewImage(meme);
+                return new ResponseEntity<String>(memeService.getImage(meme.getId())+"", HttpStatus.ACCEPTED);
+            }
+        }
+        return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
     }
 
-    @PostMapping("/addTemplate")
+    @PostMapping("/postTemplate")
     public ResponseEntity<String> register(@RequestBody Template template)
     {
-        templatesService.regNewTemplate(template);
-        return new ResponseEntity<String>(templatesService.getTemplate(template.getId())+"", HttpStatus.ACCEPTED);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if(auth.isAuthenticated()) {
+            User user = usersService.findByName(auth.getName());
+            if (user != null) {
+                template.setUser(user);
+                templatesService.regNewTemplate(template);
+                return new ResponseEntity<String>(templatesService.getTemplate(template.getId())+"", HttpStatus.ACCEPTED);
+            }
+        }
+        return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
     }
 
 }

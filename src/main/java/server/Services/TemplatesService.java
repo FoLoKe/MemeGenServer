@@ -5,17 +5,24 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import server.Entities.Tag;
 import server.Entities.Template;
 
 import server.Entities.User;
+import server.Repositories.TagsRepository;
 import server.Repositories.TemplatesRepository;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class TemplatesService {
     @Autowired
     public TemplatesRepository repo;
+
+    @Autowired
+    public TagsRepository tagsRepository;
 
     public List<Template> getSomeTemplates(int start, int max){
         return  repo.findTemplates(PageRequest.of(start, max, Sort.Direction.ASC,"id"));
@@ -27,13 +34,29 @@ public class TemplatesService {
 
     public void regNewTemplate(Template template)
     {
-        List<Template> templates= getAllTemplates();
+        List<Tag> allTags = tagsRepository.findAll();
+        Set<Tag> realTags = new HashSet<>();
 
 
-        if(template.getName()!=null&&!templates.contains(template))
-        {
-            repo.saveAndFlush(template);
-        }
+            for(Tag templateTag : template.getTags()) {
+                boolean found = false;
+
+                for (Tag tag : allTags) {
+                    if (tag.getName().equals(templateTag.getName())) {
+                        found = true;
+                    }
+                }
+
+                if(!found) {
+                    tagsRepository.saveAndFlush(templateTag);
+                }
+
+                Tag tag = tagsRepository.findByName(templateTag.getName());
+                realTags.add(tag);
+
+            }
+        template.setTags(realTags);
+        repo.saveAndFlush(template);
 
     }
 

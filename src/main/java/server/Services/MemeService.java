@@ -1,5 +1,7 @@
 package server.Services;
 
+import org.hibernate.Hibernate;
+import org.hibernate.proxy.HibernateProxy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -9,21 +11,25 @@ import server.Entities.MemeInfo;
 import server.Entities.Tag;
 import server.Entities.User;
 import server.Repositories.MemeRepository;
+import server.Repositories.TagsRepository;
 
 import javax.transaction.Transactional;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class MemeService {
     @Autowired
     public MemeRepository repo;
-    public TagsService tagSer;
-    public List<Meme> getSomeImages(int start, int max){
-        return  repo.findMemes(PageRequest.of(start, max, Sort.Direction.ASC, "id"));
-    }
+    @Autowired
+    public TagsRepository tagsRepository;
 
-    public List<Meme> getAllImages(){
-        return  repo.findAll();
+    @Transactional
+    public List<Meme> getSomeImages(int start, int max){
+        List<Meme> memes = repo.findMemes(PageRequest.of(start, max, Sort.Direction.ASC, "id"));
+
+        return  memes;
     }
 
     @Transactional
@@ -95,23 +101,31 @@ public class MemeService {
 
     public void regNewImage(Meme meme)
     {
-        List<Tag> allTagsOnServer= tagSer.getAllTags();
-        List<Tag> allTagsOfImage= tagSer.getAllTags();
-
-        for(Tag buffTagOnSer : allTagsOnServer)
-        {
-            for(Tag buffTagOnIm : allTagsOfImage)
-            {
-                if(!buffTagOnSer.getName().contains(buffTagOnIm.getName()))
-                {
-                    tagSer.regNewTag(buffTagOnIm);
-                }
-            }
-
-        }
 
         if(meme.getImage()!=null)
         {
+            List<Tag> allTags = tagsRepository.findAll();
+            Set<Tag> realTags = new HashSet<>();
+
+
+            for(Tag memeTag : meme.getTags()) {
+                boolean found = false;
+
+                for (Tag tag : allTags) {
+                    if (tag.getName().equals(memeTag.getName())) {
+                        found = true;
+                    }
+                }
+
+                if(!found) {
+                    tagsRepository.saveAndFlush(memeTag);
+                }
+
+                Tag tag = tagsRepository.findByName(memeTag.getName());
+                realTags.add(tag);
+
+            }
+            meme.setTags(realTags);
             repo.saveAndFlush(meme);
         }
 

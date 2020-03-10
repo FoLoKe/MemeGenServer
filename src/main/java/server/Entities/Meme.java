@@ -15,7 +15,7 @@ public class Meme {
     @Column(name = "image", length = 1024 * 1024 * 32)
     private byte[] image;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private User user;
 
