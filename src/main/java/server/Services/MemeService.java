@@ -28,6 +28,18 @@ public class MemeService {
     @Transactional
     public List<Meme> getSomeImages(int start, int max){
         List<Meme> memes = repo.findMemes(PageRequest.of(start, max, Sort.Direction.ASC, "id"));
+        return  memes;
+    }
+
+    @Transactional
+    public List<Meme> getSomeImages(int start, int max, String[] tags){
+        List<Tag> tagsList = tagsRepository.findAll(tags);
+
+        List<Meme> memes = null;
+
+        if(tags.length == tagsList.size()) {
+            memes = repo.findMemes(PageRequest.of(start, max, Sort.Direction.ASC, "id"), tagsList, tagsList.size());
+        }
 
         return  memes;
     }

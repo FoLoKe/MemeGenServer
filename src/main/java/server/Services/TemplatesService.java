@@ -12,6 +12,7 @@ import server.Entities.User;
 import server.Repositories.TagsRepository;
 import server.Repositories.TemplatesRepository;
 
+import javax.transaction.Transactional;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -24,14 +25,17 @@ public class TemplatesService {
     @Autowired
     public TagsRepository tagsRepository;
 
+    @Transactional
     public List<Template> getSomeTemplates(int start, int max){
         return  repo.findTemplates(PageRequest.of(start, max, Sort.Direction.ASC,"id"));
     }
 
+    @Transactional
     public List<Template> getAllTemplates(){
         return  repo.findAll();
     }
 
+    @Transactional
     public void regNewTemplate(Template template)
     {
         List<Tag> allTags = tagsRepository.findAll();
@@ -60,6 +64,7 @@ public class TemplatesService {
 
     }
 
+    @Transactional
     public Template getTemplate(int id) {
         return repo.findById(id).orElse(null);
     }

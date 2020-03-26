@@ -1,8 +1,13 @@
 package server.Entities;
 
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.TermVector;
+
 import javax.persistence.*;
 
 @Entity
+@Indexed
 @Table(name = "memegen.tags")
 public class Tag {
     @Id
@@ -10,6 +15,7 @@ public class Tag {
     @Column(name = "tag_id")
     private int id;
 
+    @Field
     @Column(name = "name")
     private String name;
 

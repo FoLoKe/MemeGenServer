@@ -1,6 +1,7 @@
 package server.Controllers;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,10 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import server.Entities.Meme;
-import server.Entities.MemeInfo;
-import server.Entities.Template;
-import server.Entities.User;
+import server.Entities.*;
 import server.Services.MemeService;
 import server.Services.TagsService;
 import server.Services.TemplatesService;
@@ -33,39 +31,53 @@ public class ContentController {
     @Autowired
     UsersService usersService;
 
-    @GetMapping("/get")
-    public List<MemeInfo> getSome() {
-        List<Meme> memes = memeService.getSomeImages(0, 10);
+    @PostMapping("/getMemes")
+    public List<MemeInfo> getMemes(@RequestParam(name = "last") int last, @RequestParam(name = "type") boolean type,
+                                   @RequestBody(required = false) String[] tags) {
+        if(last == -1) {
+            last = 0;
+        }
+        System.out.println("a");
+        List<Meme> memes = null;
+        if(tags == null) {
+            memes = memeService.getSomeImages(last, 10);
+        } else {
+            memes = memeService.getSomeImages(last, 10, tags);
+        }
+
         List<MemeInfo> memesInfo = new ArrayList<>();
-        for(Meme meme : memes) {
-            MemeInfo memeInfo = new MemeInfo();
-            memeInfo.setLikes(meme.getLikes().size());
-            memeInfo.setDislikes(meme.getDislikes().size());
 
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            if(auth.isAuthenticated()) {
-                User user = usersService.findByName(auth.getName());
-                if(user != null) {
-                    for (User poster : meme.getLikes()) {
-                        if (poster.getName().equals(user.getName())) {
-                            memeInfo.setLikeState(true);
-                            break;
+        if(memes != null) {
+            for (Meme meme : memes) {
+                MemeInfo memeInfo = new MemeInfo();
+                memeInfo.setLikes(meme.getLikes().size());
+                memeInfo.setDislikes(meme.getDislikes().size());
+
+                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                if (auth.isAuthenticated()) {
+                    User user = usersService.findByName(auth.getName());
+                    if (user != null) {
+                        for (User poster : meme.getLikes()) {
+                            if (poster.getName().equals(user.getName())) {
+                                memeInfo.setLikeState(true);
+                                break;
+                            }
                         }
-                    }
 
-                    for (User poster : meme.getDislikes()) {
-                        if (poster.getName().equals(user.getName())) {
-                            memeInfo.setDislikeState(true);
-                            break;
+                        for (User poster : meme.getDislikes()) {
+                            if (poster.getName().equals(user.getName())) {
+                                memeInfo.setDislikeState(true);
+                                break;
+                            }
                         }
                     }
                 }
-            }
 
-            meme.setDislikes(null);
-            meme.setLikes(null);
-            memeInfo.setMeme(meme);
-            memesInfo.add(memeInfo);
+                meme.setDislikes(null);
+                meme.setLikes(null);
+                memeInfo.setMeme(meme);
+                memesInfo.add(memeInfo);
+            }
         }
         return memesInfo;
     }
@@ -73,6 +85,9 @@ public class ContentController {
     @GetMapping("/getTemplates")
     public List<Template> getTemplates() {
         List<Template> loaded = templatesService.getSomeTemplates(0,2);
+        for(Template template : loaded) {
+            template.setUser(null);
+        }
         return loaded;
     }
 
@@ -130,4 +145,11 @@ public class ContentController {
         return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
     }
 
+    @GetMapping("/getTags")
+    public ResponseEntity<Tag[]> getTags(@RequestParam(name = "tag") String tag){
+
+        List<Tag> tags = tagsService.findTags(tag);
+        Tag[] tagsArray = tags.toArray(new Tag[0]);
+        return new ResponseEntity<Tag[]>(tagsArray, HttpStatus.ACCEPTED);
+    }
 }

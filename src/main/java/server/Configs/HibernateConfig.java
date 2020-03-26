@@ -1,13 +1,9 @@
 package server.Configs;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -25,19 +21,14 @@ import static org.hibernate.cfg.AvailableSettings.*;
 @PropertySource(value = "classpath:db.properties")
 public class HibernateConfig {
 
-    private Environment environment;
-
     @Autowired
-    public void setEnvironment(Environment environment) {
-        this.environment = environment;
-    }
+    private Environment environment;
 
     private Properties hibernateProperties() {
         Properties properties = new Properties();
         properties.put(DIALECT, environment.getRequiredProperty("hibernate.dialect"));
         properties.put(HBM2DDL_AUTO, environment.getRequiredProperty("hibernate.ddl-auto"));
         properties.put(SHOW_SQL, environment.getRequiredProperty("hibernate.show_sql"));
-        properties.put(HBM2DDL_IMPORT_FILES, environment.getRequiredProperty("hibernate.import"));
         properties.put("hibernate.temp.use_jdbc_metadata_defaults", false);
         return properties;
     }
@@ -53,28 +44,19 @@ public class HibernateConfig {
     }
 
     @Bean
-    public LocalSessionFactoryBean sessionFactory() {
-        LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
-        sessionFactory.setDataSource(dataSource());
-        sessionFactory.setPackagesToScan("polygon.models");
-        sessionFactory.setHibernateProperties(hibernateProperties());
-        return sessionFactory;
-    }
-
-    @Bean
     public JpaTransactionManager transactionManager() {
         JpaTransactionManager transactionManager = new JpaTransactionManager();
         transactionManager.setEntityManagerFactory(entityManagerFactory().getObject());
-        //transactionManager.setSessionFactory(sessionFactory().getObject());
         return transactionManager;
     }
 
     @Bean
+    @Primary
     public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
         LocalContainerEntityManagerFactoryBean em
                 = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource());
-        em.setPackagesToScan(new String[]{"server.entities"});
+        em.setPackagesToScan("server.entities");
 
         JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);
